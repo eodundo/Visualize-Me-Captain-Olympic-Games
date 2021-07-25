@@ -1,17 +1,21 @@
 import numpy as np
+import pandas as pd
+import psycopg2
+import os
+import datetime as dt
 
 import sqlalchemy
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
-from sqlalchemy import create_engine, func, inspect
+from sqlalchemy import create_engine, func, inspect, Column, Integer, String, Float
+from sqlalchemy.ext.declarative import declarative_base
 
-from flask import Flask, jsonify
-import datetime as dt
+from flask import Flask, jsonify, render_template
 
 #################################################
 # Database Setup
 #################################################
-engine = create_engine("sqlite:///Resources/hawaii.sqlite")
+engine = create_engine("sqlite:///olympics.sqlite")
 
 # reflect an existing database into a new model
 Base = automap_base()
