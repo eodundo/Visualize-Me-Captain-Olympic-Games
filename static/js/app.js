@@ -1,9 +1,9 @@
-    function buildCharts(year){
-        d3.csv("new_athletes_events.csv").then(function(data) {
-        var sampleYear = {};
-        var newYear = data.filter(function(entry) {
-        if (sampleYear[entry.Year]) {
-        return false;
+function buildCharts(year){
+    d3.csv("../new_athletes_events.csv").then(function(data) {
+    var sampleYear = {};
+    var newYear = data.filter(function(entry) {
+    if (sampleYear[entry.Year]) {
+    return false;
     }
         
 
@@ -40,7 +40,7 @@
 
     function init(){
     var mySelect = d3.select("#selDataset");
-    d3.csv("new_athletes_events.csv").then(function(data) {
+    d3.csv("../new_athletes_events.csv").then(function(data) {
         console.log(data);
 
         
