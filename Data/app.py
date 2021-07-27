@@ -1,142 +1,79 @@
-import numpy as np
-import pandas as pd
-import psycopg2
-import os
-import datetime as dt
-
+from flask import Flask, json, jsonify
+from sqlalchemy import create_engine
 import sqlalchemy
+
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
-from sqlalchemy import create_engine, func, inspect, Column, Integer, String, Float
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import func
+from sqlalchemy.sql.expression import cast
 
-from flask import Flask, jsonify, render_template
 
-#################################################
-# Database Setup
-#################################################
-engine = create_engine("sqlite:///olympics.sqlite")
-
-# reflect an existing database into a new model
-Base = automap_base()
-# reflect the tables
-Base.prepare(engine, reflect=True)
-
-#Save reference to the tables
-Measurement = Base.classes.measurement
-Station = Base.classes.station
-
-#################################################
-# Flask Setup
-#################################################
 app = Flask(__name__)
+engine = create_engine('postgresql://postgres:postgres@localhost/Olympics')
+
+Base = automap_base()
+
+Base.prepare(engine,reflect=True)
+
+Athlete_Data = Base.classes.Athlete_Events
+session = Session(engine)
+print(Athlete_Data)
+
+def nest(rows):
+    root = {}
+    for row in rows:
+        d = root
+        for item in row[:-2]:
+            d = d.setdefault(item, {})
+        d[row[-2]] = row[-1]
+    return root
+
+@app.route('/woman')
+def hello():
+    results = session.query(Athlete_Data.Games,func.count(Athlete_Data.Games)).filter_by(Sex='F').group_by(Athlete_Data.Games).all()  
+    # return jsonify(json_list = results)
+    game_list = []
+    woman_count = []
+    for r in results:
+        game_list.append(r[0])
+        woman_count.append(r[1])
+    results_dictionary = {"Games":game_list,"W_Count":woman_count}
+    return jsonify(results_dictionary)
 
 
-#################################################
-# Flask Routes
-#################################################
+@app.route('/medals')
+def goodbye():
+    results = session.query(Athlete_Data.Games,Athlete_Data.Country,cast(func.sum(Athlete_Data.Bronze),sqlalchemy.Integer)\
+        ,cast(func.sum(Athlete_Data.Silver),sqlalchemy.Integer),cast(func.sum(Athlete_Data.Gold),sqlalchemy.Integer))\
+       .group_by(Athlete_Data.Games,Athlete_Data.Country).all() 
 
-@app.route("/")
-def welcome():
-    """List all available api routes."""
-    return (
-        f"Available Routes:<br/>"
-        f"Precipitation: /api/v1.0/precipitation<br/>"
-        f"List of Stations: /api/v1.0/stations<br/>"
-        f"Temperature for one year: /api/v1.0/tobs<br/>"
-        f"Temperature stats from start date (yyyy-mm-dd): /api/v1.0/(yyyy-mm-dd)<br/>"
-        f"Temperature stats from start/end dates (yyyy-mm-dd): /api/v1.0/(yyyy-mm-dd)/(yyyy-mm-dd)"
-    )
+    print(nest(results))
+    # country_list = []
+    # medal_bronze = []
+    # medal_silver = []
+    # medal_gold = []
+    # temp_dict = {'country':[],'bronze':[],'silver':[],'gold':[]}
+    # for r in results:
+    #     if r[0] is not temp_dict:
 
-@app.route("/api/v1.0/precipitation")
-def precipitation():
-    session = Session(engine)
-    sel = [Measurement.date,Measurement.prcp]
-    queryresult = session.query(*sel).all()
-    session.close()
-
-    precipitation = []
-    for date, prcp in queryresult:
-        prcp_dict = {}
-        prcp_dict["Date"] = date
-        prcp_dict["Precipitation"] = prcp
-        precipitation.append(prcp_dict)
-
-    return jsonify(precipitation)
-
-@app.route("/api/v1.0/stations")
-def stations():
-    session = Session(engine)
-    sel = [Station.station,Station.name,Station.latitude,Station.longitude,Station.elevation]
-    queryresult = session.query(*sel).all()
-    session.close()
-
-    stations = []
-    for station,name,lat,lon,el in queryresult:
-        station_dict = {}
-        station_dict["Station"] = station
-        station_dict["Name"] = name
-        station_dict["Lat"] = lat
-        station_dict["Lon"] = lon
-        station_dict["Elevation"] = el
-        stations.append(station_dict)
-
-    return jsonify(stations)
-
-@app.route("/api/v1.0/tobs")
-def tobs():
-    session = Session(engine)
-    lateststr = session.query(Measurement.date).order_by(Measurement.date.desc()).first()[0]
-    latestdate = dt.datetime.strptime(lateststr, '%Y-%m-%d')
-    querydate = dt.date(latestdate.year -1, latestdate.month, latestdate.day)
-    sel = [Measurement.date,Measurement.tobs]
-    queryresult = session.query(*sel).filter(Measurement.date >= querydate).all()
-    session.close()
-
-    tobsall = []
-    for date, tobs in queryresult:
-        tobs_dict = {}
-        tobs_dict["Date"] = date
-        tobs_dict["Tobs"] = tobs
-        tobsall.append(tobs_dict)
-
-    return jsonify(tobsall)
-
-@app.route("/api/v1.0/<start>")
-def get_t_start(start):
-    session = Session(engine)
-    queryresult = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
-        filter(Measurement.date >= start).all()
-    session.close()
-
-    tobsall = []
-    for min,avg,max in queryresult:
-        tobs_dict = {}
-        tobs_dict["Min"] = min
-        tobs_dict["Average"] = avg
-        tobs_dict["Max"] = max
-        tobsall.append(tobs_dict)
-
-    return jsonify(tobsall)
-
-@app.route("/api/v1.0/<start>/<stop>")
-def get_t_start_stop(start,stop):
-    session = Session(engine)
-    queryresult = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
-        filter(Measurement.date >= start).filter(Measurement.date <= stop).all()
-    session.close()
-
-    tobsall = []
-    for min,avg,max in queryresult:
-        tobs_dict = {}
-        tobs_dict["Min"] = min
-        tobs_dict["Average"] = avg
-        tobs_dict["Max"] = max
-        tobsall.append(tobs_dict)
+    #     country_list.append(r[1])
+    #     medal_bronze.append(r[2])
+    #     medal_silver.append([3])
+    #     medal_gold.append([4])
+    #     print(r)
+    #{'Tokyo 2021' : {country:[],gold=[]}}
+    # return jsonify(json_list = results)
+    # game_list = []
+    # woman_count = []
+    # for r in results:
+    #     game_list.append(r[0])
+    #     woman_count.append(r[1])
+    # results_dictionary = {"Games":game_list,"W_Count":woman_count}
+    # return jsonify(results_dictionary)
+    print(results)
 
 
-    return jsonify(tobsall)
-
-
+    
+    
 if __name__ == '__main__':
-    app.run(debug=True)	
+    app.run()
