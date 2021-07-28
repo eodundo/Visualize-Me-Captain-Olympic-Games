@@ -5,12 +5,18 @@ import sqlalchemy
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+from sqlalchemy import asc
+
 from sqlalchemy.sql.expression import cast
 
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
-engine = create_engine('postgresql://postgres:postgres@localhost/Olympics')
 
+engine = create_engine('postgresql://postgres:postgres@localhost/Olympics')
+CORS(app, support_credentials=True)
+
+app.config['CORS_HEADERS'] = 'application/json'
 Base = automap_base()
 
 Base.prepare(engine,reflect=True)
@@ -29,6 +35,7 @@ def nest(rows):
     return root
 
 @app.route('/woman')
+@cross_origin(supports_credentials=True)
 def woman():
     results = session.query(Athlete_Data.Games,func.count(Athlete_Data.Games)).filter_by(Sex='F').group_by(Athlete_Data.Games).all()  
     # return jsonify(json_list = results)
@@ -40,22 +47,29 @@ def woman():
     results_dictionary = {"Games":game_list,"W_Count":woman_count}
     return jsonify(results_dictionary)
 
-@app.route('/man')
-def man():
-    results = session.query(Athlete_Data.Games,func.count(Athlete_Data.Games)).filter_by(Sex='M').group_by(Athlete_Data.Games).all()  
+@app.route('/age')
+@cross_origin(supports_credentials=True)
+def age():
+    results = session.query(Athlete_Data.Games,func.min(Athlete_Data.Age),func.max(Athlete_Data.Age)).filter(Athlete_Data.Age>0).group_by(Athlete_Data.Games).order_by(asc(func.min(Athlete_Data.Age))).all()  
     # return jsonify(json_list = results)
+
+    print(results)
+
     game_list = []
-    man_count = []
+    age_min = []
+    age_max = []
     for r in results:
         game_list.append(r[0])
-        man_count.append(r[1])
-    results_dictionary = {"Games":game_list,"M_Count":man_count}
+        age_min.append(r[1])
+        age_max.append(r[2])
+    results_dictionary = {"Games":game_list,"min_ages":age_min,"max_ages":age_max}
     return jsonify(results_dictionary)
 
 
-@app.route('/age')
-def age():
-    results = session.query(Athlete_Data.Games,func.count(Athlete_Data.Games)).filter_by(Sex='M').group_by(Athlete_Data.Games).all()  
+@app.route('/man')
+@cross_origin(supports_credentials=True)
+def man():
+    results = session.query(Athlete_Data.Name,func.count(Athlete_Data.Games)).filter_by(Sex='M').group_by(Athlete_Data.Games).all()  
     # return jsonify(json_list = results)
     game_list = []
     man_count = []
@@ -67,6 +81,7 @@ def age():
 
 
 @app.route('/medals')
+@cross_origin(supports_credentials=True)
 def medals():
     results = session.query(Athlete_Data.Games,Athlete_Data.Country,cast(func.sum(Athlete_Data.Bronze),sqlalchemy.Integer)\
         ,cast(func.sum(Athlete_Data.Silver),sqlalchemy.Integer),cast(func.sum(Athlete_Data.Gold),sqlalchemy.Integer))\
