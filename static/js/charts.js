@@ -17,9 +17,9 @@
 
 // // Part 2 - Adding attributes
 var trace1 = {
-  x: ["beer", "wine", "martini", "margarita",
-      "ice tea", "rum & coke", "mai tai", "gin & tonic"],
-  y: [22.7, 17.1, 9.9, 8.7, 7.2, 6.1, 6.0, 4.6],
+  x: ["United States", "United Kingdom", "Germany", "France",
+       "Italy", "Sweden", "China", "Russia", "Norway","Canada"],
+  y: [2827,883,855,840,701,652,608,546,520,201],
   type: "bar"
 };
 
@@ -28,9 +28,9 @@ var trace1 = {
 var data = [trace1];
 
 var layout = {
-  title: "'Bar' Chart",
-  xaxis: { title: "Drinks"},
-  yaxis: { title: "% of Drinks Ordered"}
+  title: "Most Medals Won",
+  xaxis: { title: "Country"},
+  yaxis: { title: "Total Medals"}
 };
 
 Plotly.newPlot("plot", data, layout);

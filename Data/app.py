@@ -53,7 +53,7 @@ def age():
     results = session.query(Athlete_Data.Games,func.min(Athlete_Data.Age),func.max(Athlete_Data.Age)).filter(Athlete_Data.Age>0).group_by(Athlete_Data.Games).order_by(asc(func.min(Athlete_Data.Age))).all()  
     # return jsonify(json_list = results)
 
-    print(results)
+    # print(results)
 
     game_list = []
     age_min = []
@@ -87,33 +87,56 @@ def medals():
         ,cast(func.sum(Athlete_Data.Silver),sqlalchemy.Integer),cast(func.sum(Athlete_Data.Gold),sqlalchemy.Integer))\
        .group_by(Athlete_Data.Games,Athlete_Data.Country).all() 
 
-    print(nest(results))
-    # country_list = []
-    # medal_bronze = []
-    # medal_silver = []
-    # medal_gold = []
-    # temp_dict = {'country':[],'bronze':[],'silver':[],'gold':[]}
-    # for r in results:
-    #     if r[0] is not temp_dict:
-
-    #     country_list.append(r[1])
-    #     medal_bronze.append(r[2])
-    #     medal_silver.append([3])
-    #     medal_gold.append([4])
-    #     print(r)
-    #{'Tokyo 2021' : {country:[],gold=[]}}
-    # return jsonify(json_list = results)
-    # game_list = []
-    # woman_count = []
-    # for r in results:
-    #     game_list.append(r[0])
-    #     woman_count.append(r[1])
-    # results_dictionary = {"Games":game_list,"W_Count":woman_count}
-    # return jsonify(results_dictionary)
-    print(results)
-
-
+    country_list = []
+    medal_bronze = []
+    medal_silver = []
+    medal_gold = []
     
+    for r in results:
+        country_list.append(r[1])
+        medal_bronze.append(r[2])
+        medal_silver.append([3])
+        medal_gold.append([4])
+    results_dictionary = {"Country":country_list,"Bronze":medal_bronze,"Silver":medal_silver,"Gold":medal_gold}
+    return jsonify(json_list = results)
+
+
+
+# @app.route('/medals')
+# @cross_origin(supports_credentials=True)
+# def medals():
+#     results = session.query(Athlete_Data.Games,Athlete_Data.Country,cast(func.sum(Athlete_Data.Bronze),sqlalchemy.Integer)\
+#         ,cast(func.sum(Athlete_Data.Silver),sqlalchemy.Integer),cast(func.sum(Athlete_Data.Gold),sqlalchemy.Integer))\
+#        .group_by(Athlete_Data.Games,Athlete_Data.Country).all() 
+
+#     print(nest(results))
+#     country_list = []
+#     medal_bronze = []
+#     medal_silver = []
+#     medal_gold = []
+#     temp_dict = {'country':[],'bronze':[],'silver':[],'gold':[]}
+#     for r in results:
+#         if r[0] is not temp_dict:
+
+#             country_list.append(r[1])
+#             medal_bronze.append(r[2])
+#             medal_silver.append([3])
+#             medal_gold.append([4])
+#             print(r)
+#     {'Tokyo 2021' : {country:[],gold=[]}}
+#     return jsonify(json_list = results)
+#     game_list = []
+#     woman_count = []
+#     for r in results:
+#         game_list.append(r[0])
+#         woman_count.append(r[1])
+#     results_dictionary = {"Games":game_list,"W_Count":woman_count}
+#     return jsonify(results_dictionary)
+#     print(results)
+
+
+
+
     
 if __name__ == '__main__':
     app.run()
