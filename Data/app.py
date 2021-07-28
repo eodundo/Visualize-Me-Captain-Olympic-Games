@@ -29,7 +29,7 @@ def nest(rows):
     return root
 
 @app.route('/woman')
-def hello():
+def woman():
     results = session.query(Athlete_Data.Games,func.count(Athlete_Data.Games)).filter_by(Sex='F').group_by(Athlete_Data.Games).all()  
     # return jsonify(json_list = results)
     game_list = []
@@ -40,9 +40,34 @@ def hello():
     results_dictionary = {"Games":game_list,"W_Count":woman_count}
     return jsonify(results_dictionary)
 
+@app.route('/man')
+def man():
+    results = session.query(Athlete_Data.Games,func.count(Athlete_Data.Games)).filter_by(Sex='M').group_by(Athlete_Data.Games).all()  
+    # return jsonify(json_list = results)
+    game_list = []
+    man_count = []
+    for r in results:
+        game_list.append(r[0])
+        man_count.append(r[1])
+    results_dictionary = {"Games":game_list,"M_Count":man_count}
+    return jsonify(results_dictionary)
+
+
+@app.route('/age')
+def age():
+    results = session.query(Athlete_Data.Games,func.count(Athlete_Data.Games)).filter_by(Sex='M').group_by(Athlete_Data.Games).all()  
+    # return jsonify(json_list = results)
+    game_list = []
+    man_count = []
+    for r in results:
+        game_list.append(r[0])
+        man_count.append(r[1])
+    results_dictionary = {"Games":game_list,"M_Count":man_count}
+    return jsonify(results_dictionary)
+
 
 @app.route('/medals')
-def goodbye():
+def medals():
     results = session.query(Athlete_Data.Games,Athlete_Data.Country,cast(func.sum(Athlete_Data.Bronze),sqlalchemy.Integer)\
         ,cast(func.sum(Athlete_Data.Silver),sqlalchemy.Integer),cast(func.sum(Athlete_Data.Gold),sqlalchemy.Integer))\
        .group_by(Athlete_Data.Games,Athlete_Data.Country).all() 
