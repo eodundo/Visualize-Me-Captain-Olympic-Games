@@ -45,10 +45,17 @@ d3.json("http://127.0.0.1:5000/woman").then(function(data) {
       type: "line"
     };
     
+    // var trace2 = {
+    //   x: data.Games,
+    //   y: data.M_Count,
+    //   type: "line"
+    // };
+
     var data = [trace1];
-    
+    //var data = [trace1, trace2];
+
     var layout = {
-      title: "Line Chart",
+      title: "Women Participation",
     };
     
     Plotly.newPlot("plot2", data, layout);

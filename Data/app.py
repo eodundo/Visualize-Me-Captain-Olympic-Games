@@ -50,7 +50,11 @@ def woman():
 @app.route('/age')
 @cross_origin(supports_credentials=True)
 def age():
-    results = session.query(Athlete_Data.Games,func.min(Athlete_Data.Age),func.max(Athlete_Data.Age)).filter(Athlete_Data.Age>0).group_by(Athlete_Data.Games).order_by(asc(func.min(Athlete_Data.Age))).all()  
+    
+    results = session.query(Athlete_Data.Games,func.min(Athlete_Data.Age),func.max(Athlete_Data.Age)).filter(Athlete_Data.Age>0).group_by(Athlete_Data.Games).all()  
+    
+    #results = session.query(Athlete_Data.Games,func.min(Athlete_Data.Age),func.max(Athlete_Data.Age)).filter(Athlete_Data.Age>0).group_by(Athlete_Data.Games).order_by(asc(func.min(Athlete_Data.Age))).all()
+    
     # return jsonify(json_list = results)
 
     # print(results)
